@@ -29,28 +29,16 @@ int main() {
     scarfyData.frame = 0; scarfyData.updateTime = 1.0/12.0;
     scarfyData.runningTime = 0;
 
-    /*
-    Rectangle scarfyRec{0.0, 0.0, scarfy.width/6, scarfy.height};
-    // scarfyRec.width = scarfy.width / 6;
-    // scarfyRec.height = scarfy.height;
-    // scarfyRec.x = 0; scarfyRec.y = 0;
-    Vector2 scarfyPos;
-    scarfyPos.x = windowWidth/2 - scarfyRec.width/2;
-    scarfyPos.y = windowHeight - scarfyRec.height;
-    */
-
     // Nebula aka hazards to jump
     Texture2D nebula = LoadTexture("textures/12_nebula_spritesheet.png");
 
     // animData struct for the nebula
     AnimData nebData{ 
-        {0.0, 0.0, nebula.width/8, nebula.height/8},    // Rectangle Rec
-        {windowDimensions[0], windowDimensions[1] - nebula.height/8},  // Vector2 Pos
-        0,                                              // int frame
-        1.0/12.0,                                       // float updateTime
-        0.0};                                             // float runningTime
-    // Rectangle nebRec{0.0, 0.0, nebula.width/8, nebula.height/8};
-    // Vector2 nebPos{windowWidth, windowHeight - nebRec.height};
+        {0.0, 0.0, nebula.width/8, nebula.height/8},                    // Rectangle Rec
+        {windowDimensions[0], windowDimensions[1] - nebula.height/8},   // Vector2 Pos
+        0,                                                              // int frame
+        1.0/12.0,                                                       // float updateTime
+        0.0};                                                           // float runningTime
 
     // animData struct for the nebula
     AnimData neb2Data{ 
@@ -64,17 +52,6 @@ int main() {
 
     // nebula X velocity (pixels/second) frame independent
     int nebVel{-200};
-
-    // nebula variables
-    // int nebFrame{};
-    // const float nebUpdateTime{1.0/12.0};
-    // float nebRunningTime{}; // To keep track of how much time has passed since the last animation update
-
-
-    // rectangle dimensions; Don't need these anymore because scarfy sprite is loaded into program.
-    // const int width{50}; const int height{80};
-    // Don't need this one either because we have Vector2 as well.
-    // int posY{windowHeight - height};
 
     int velocity{0};
 
@@ -90,16 +67,6 @@ int main() {
     SetTargetFPS(frames_ps);
 
 
-    // animation frame
-    // int frame{};
-
-
-    // amount of time before updating the animation frame.  This updates the frame 12 times per second. Meaning it makes two rotations on the sprite.
-    // const float updateTime{1.0 / 12.0};
-    // float runningTime{};
-
-    
-
     while(!WindowShouldClose()) {
         // Time since last frame
         const float deltaTime{GetFrameTime()};
@@ -109,7 +76,6 @@ int main() {
         ClearBackground(WHITE);
 
         // perform ground check; scarfy used to be posY, height
-        // used to be if(scarfyPos.y)
         if (scarfyData.pos.y >= windowDimensions[1] - scarfyData.rec.height) {
             // rect is on ground; reset velocity
             velocity = 0;
@@ -169,8 +135,7 @@ int main() {
             nebulae[1].frame %= 8;
         }
 
-        // Player is no longer a rectangle, ergo draw texture of player
-        // DrawRectangle(windowWidth / 2, posY, width, height, BLUE);
+        // Draw Player aka Scarfy
         DrawTextureRec(scarfy, scarfyData.rec, scarfyData.pos, WHITE);
 
         // Draw nebula
