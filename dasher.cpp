@@ -8,6 +8,29 @@ struct AnimData {
     float runningTime;
 };
 
+bool isOnGround (AnimData data, int windowHeight) {
+    return data.pos.y >= windowHeight - data.rec.height;
+
+}
+
+AnimData* updateAnimData (AnimData *data, float dT, int maxFrame) {
+    // update running time
+    data->runningTime += dT;
+    if (data->runningTime >= data->updateTime) {
+        data->runningTime = 0.0;
+        // update animation frame
+        data->rec.x = data->frame * data->rec.width;
+        data->frame++;
+        data->frame %= maxFrame;
+    }
+
+    return data;
+}
+
+void updateAnimData(AnimData *data) {
+    data->pos.x = 2; // Then just use function with the & operator, no need to create excess copies
+}
+
 int main() {
     int windowDimensions[] = {512, 380};
     // int windowWidth{512}; int windowHeight{380}; 
@@ -24,10 +47,10 @@ int main() {
     scarfyData.rec.width = scarfy.width/6;
     scarfyData.rec.height = scarfy.height;
     scarfyData.rec.x = 0; scarfyData.rec.y = 0;
-    scarfyData.pos.x = windowDimensions[1]/2 - scarfyData.rec.width/2;
+    scarfyData.pos.x = windowDimensions[0]/2 - scarfyData.rec.width/2;
     scarfyData.pos.y = windowDimensions[1] - scarfyData.rec.height;
     scarfyData.frame = 0; scarfyData.updateTime = 1.0/12.0;
-    scarfyData.runningTime = 0;
+    scarfyData.runningTime = 0.0;
 
     // Nebula aka hazards to jump
     Texture2D nebula = LoadTexture("textures/12_nebula_spritesheet.png");
@@ -52,9 +75,16 @@ int main() {
 
     int velocity{0};
 
+    Texture2D background = LoadTexture("textures/far-buildings.png");
+    float bgX{};
+    Texture2D midground = LoadTexture("textures/back-buildings.png");
+    float mgX{};
+    Texture2D foreground = LoadTexture("textures/foreground.png");
+    float fgX{};
+
 
     // Player aerial status
-    bool isInAir{false};
+    bool isInAir{};
 
 
     // Jump velocity (pixels/second)
@@ -72,8 +102,39 @@ int main() {
         BeginDrawing();
         ClearBackground(WHITE);
 
+
+        // This looks like it should be a function ergo TODO
+        bgX -= 20 * deltaTime;
+        if (bgX <= -background.width * 2) {
+            bgX = 0.0;
+        }
+        mgX -= 40 * deltaTime;
+        if (mgX <= -midground.width * 2) {
+            mgX = 0.0;
+        }
+        fgX -= 80 * deltaTime;
+        if (fgX <= -foreground.width * 2) {
+            fgX = 0.0;
+        }
+        
+        // Draw Background
+        Vector2 bg_1Pos{bgX, 0.0};
+        DrawTextureEx(background, bg_1Pos, 0.0, 2.0, WHITE);
+        Vector2 bg_2Pos{bgX + background.width*2, 0.0};
+        DrawTextureEx(background, bg_2Pos, 0.0, 2.0, WHITE);
+
+        Vector2 mg_1Pos{mgX, 0.0};
+        DrawTextureEx(midground, mg_1Pos, 0.0, 2.0, WHITE);
+        Vector2 mg_2Pos{mgX + midground.width * 2, 0.0};
+        DrawTextureEx(midground, mg_2Pos, 0.0, 2.0, WHITE);
+
+        Vector2 fg_1Pos{fgX, 0.0};
+        DrawTextureEx(foreground, fg_1Pos, 0.0, 2.0, WHITE);
+        Vector2 fg_2Pos{fgX + foreground.width * 2, 0.0};
+        DrawTextureEx(foreground, fg_2Pos, 0.0, 2.0, WHITE);
+
         // perform ground check; scarfy used to be posY, height
-        if (scarfyData.pos.y >= windowDimensions[1] - scarfyData.rec.height) {
+        if (isOnGround(scarfyData, windowDimensions[1])) {
             // rect is on ground; reset velocity
             velocity = 0;
             isInAir = false;
@@ -100,30 +161,13 @@ int main() {
 
         // UPDATE scarfy's animation frame
         if (!isInAir) {
-            // Update running time.
-            scarfyData.runningTime += deltaTime;
-            if (scarfyData.runningTime >= scarfyData.updateTime) {
-                scarfyData.runningTime = 0.0;
-
-                // update animation frame
-                scarfyData.rec.x = scarfyData.frame * scarfyData.rec.width;
-                // Update the frame
-                scarfyData.frame++;
-                // Reset the frame
-                scarfyData.frame %= 6;
-            }
+            updateAnimData(&scarfyData, deltaTime, 6);
         }
 
 
         for (int i = 0; i < sizeOfNebulae; i++) {
             // UPDATE nebula animation frame
-            nebulae[i].runningTime += deltaTime;
-            if (nebulae[i].runningTime >= nebulae[i].updateTime) {
-                nebulae[i].runningTime = 0.0;
-                nebulae[i].rec.x = nebulae[i].frame * nebulae[i].rec.width;
-                nebulae[i].frame++;
-                nebulae[i].frame %= 8;
-            }
+            updateAnimData(&nebulae[i], deltaTime, 8);
         }
 
 
@@ -132,11 +176,9 @@ int main() {
             DrawTextureRec(nebula, nebulae[i].rec, nebulae[i].pos, RED);
         }
 
-
         // Draw Player aka Scarfy
         DrawTextureRec(scarfy, scarfyData.rec, scarfyData.pos, WHITE);
         
-
         // End Drawing
         EndDrawing();
     }
@@ -144,5 +186,8 @@ int main() {
 
     UnloadTexture(scarfy);
     UnloadTexture(nebula);
+    UnloadTexture(foreground);
+    UnloadTexture(midground);
+    UnloadTexture(background);
     CloseWindow();
 }
